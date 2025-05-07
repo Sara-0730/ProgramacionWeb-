@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es"> 
+    <style>
+        /* Variables para consistencia visual */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --error-color: #dc3545;
+    --bg-color: #f8f9fa;
+    --text-color: #212529;
+    --border-color: #ced4da;
+    --max-width: 600px;
+    --padding-standard: 20px;
+}
+
+/* Estilos generales */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    padding: 20px;
+}
+
+main {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    background-color: white;
+    padding: var(--padding-standard);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-align: center;
+    /* Mejoramos el contraste para accesibilidad */
+    background-color: transparent;
+}
+
+/* Estilos del formulario */
+#form-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button:focus {
+    outline: 3px solid rgba(0, 123, 255, 0.5);
+}
+
+/* Estilos para campos obligatorios */
+.required {
+    color: var(--error-color);
+}
+
+/* Estilos para mensajes de estado */
+#status-message {
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.success-message {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: var(--success-color);
+    border: 1px solid var(--success-color);
+}
+
+.error-message {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: var(--error-color);
+    border: 1px solid var(--error-color);
+}
+
+.hidden {
+    display: none;
+}
+
+/* Estilos para el footer */
+footer {
+    max-width: var(--max-width);
+    margin: 20px auto 0;
+    text-align: center;
+    color: var(--secondary-color);
+    font-size: 14px;
+}
+
+/* Media queries para diseño responsive */
+@media screen and (max-width: 768px) {
+    main {
+        padding: 15px;
+    }
+    
+    button {
+        width: 100%;
+    }
+}
+    </style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Contacto</title>
+    <link rel="stylesheet" href="contact.css">
+    <!-- Agregamos favicon para mejorar la identidad visual -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- Agregamos meta descripción para SEO -->
+    <meta name="description" content="Formulario de contacto para nuestra empresa">
+</head>
+<body>
+    <main>
+        <h1>Contáctanos</h1>
+        
+        <div id="form-container">
+            <!-- Añadimos role para accesibilidad -->
+            <form id="contact-form" role="form" aria-label="Formulario de contacto">
+                <div class="form-group">
+                    <label for="name">Nombre <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" required aria-required="true">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Correo electrónico <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required aria-required="true">
+                </div>
+
+                <div class="form-group">
+                    <label for="msg">Mensaje <span class="required">*</span></label>
+                    <textarea id="msg" name="msg" required aria-required="true"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <!-- Añadimos un token CSRF (simulado) -->
+                    <input type="hidden" name="csrf_token" id="csrf_token" value="token_generado_aleatoriamente">
+                    <!-- Mejoramos el botón con texto significativo -->
+                    <button type="submit" id="submit-btn" aria-label="Enviar formulario">Enviar mensaje</button>
+                </div>
+            </form>
+            
+            <!-- Añadimos un div para mostrar confirmación/errores -->
+            <div id="status-message" class="hidden" role="alert" aria-live="polite"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 - Todos los derechos reservados</p>
+    </footer>
+
+    <!-- Scripts al final para mejor rendimiento -->
+    <script>/**
+        * Archivo JavaScript para el formulario de contacto
+        * Implementa validación, sanitización y manejo de errores
+        */
+       
+       document.addEventListener('DOMContentLoaded', function() {
+           // Inicializar el formulario
+           initContactForm();
+           
+           // Simulamos la generación de un token CSRF
+           document.getElementById('csrf_token').value = generateCSRFToken();
+       });
+       
+       /**
+        * Inicializa el formulario y sus eventos
+        */
+       function initContactForm() {
+           const form = document.getElementById('contact-form');
+           
+           if (form) {
+               form.addEventListener('submit', function(event) {
+                   event.preventDefault();
+                   
+                   // Validar el formulario antes de procesar
+                   if (validateForm()) {
+                       processForm();
+                   }
+               });
+           }
+       }
+       
+       /**
+        * Valida todos los campos del formulario
+        * @returns {boolean} - Indica si el formulario es válido
+        */
+       function validateForm() {
+           const name = document.getElementById('name').value.trim();
+           const email = document.getElementById('email').value.trim();
+           const message = document.getElementById('msg').value.trim();
+           let isValid = true;
+           
+           // Validar nombre
+           if (name === '') {
+               showError('El nombre es obligatorio');
+               isValid = false;
+           }
+           
+           // Validar email usando una expresión regular
+           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+           if (!emailRegex.test(email)) {
+               showError('Por favor, introduce un correo electrónico válido');
+               isValid = false;
+           }
+           
+           // Validar mensaje
+           if (message === '') {
+               showError('El mensaje es obligatorio');
+               isValid = false;
+           }
+           
+           return isValid;
+       }
+       
+       /**
+        * Procesa el formulario después de validarlo
+        */
+       function processForm() {
+           const name = sanitizeInput(document.getElementById('name').value);
+           const email = sanitizeInput(document.getElementById('email').value);
+           const message = sanitizeInput(document.getElementById('msg').value);
+           
+           // Aquí normalmente enviaríamos los datos a un servidor
+           // Como es un ejemplo, solo mostramos un mensaje de éxito
+           showSuccess(`Gracias ${name}, hemos recibido tu mensaje. Te contactaremos pronto en ${email}.`);
+           
+           // Limpiar formulario
+           document.getElementById('contact-form').reset();
+       }
+       
+       /**
+        * Sanitiza una entrada de texto para prevenir XSS
+        * @param {string} input - El texto a sanitizar
+        * @returns {string} - El texto sanitizado
+        */
+       function sanitizeInput(input) {
+           const div = document.createElement('div');
+           div.textContent = input;
+           return div.innerHTML;
+       }
+       
+       /**
+        * Muestra un mensaje de error
+        * @param {string} message - El mensaje de error
+        */
+       function showError(message) {
+           const statusDiv = document.getElementById('status-message');
+           statusDiv.textContent = message;
+           statusDiv.className = 'error-message';
+           statusDiv.classList.remove('hidden');
+           
+           // Hacer que el mensaje desaparezca después de 5 segundos
+           setTimeout(() => {
+               statusDiv.classList.add('hidden');
+           }, 5000);
+       }
+       
+       /**
+        * Muestra un mensaje de éxito
+        * @param {string} message - El mensaje de éxito
+        */
+       function showSuccess(message) {
+           const statusDiv = document.getElementById('status-message');
+           statusDiv.textContent = message;
+           statusDiv.className = 'success-message';
+           statusDiv.classList.remove('hidden');
+           
+           // Hacer que el mensaje desaparezca después de 5 segundos
+           setTimeout(() => {
+               statusDiv.classList.add('hidden');
+           }, 5000);
+       }
+       
+       /**
+        * Genera un token CSRF simulado
+        * @returns {string} - El token generado
+        */
+       function generateCSRFToken() {
+           // En producción, esto debería venir del servidor
+           return Math.random().toString(36).substring(2, 15) + 
+                  Math.random().toString(36).substring(2, 15);
+       }
+       
+       /**
+        * Almacena datos en localStorage de manera segura
+        * @param {string} key - La clave para almacenar
+        * @param {any} value - El valor a almacenar
+        */
+       function secureStore(key, value) {
+           // En una aplicación real, consideraríamos encriptar datos sensibles
+           try {
+               localStorage.setItem(key, JSON.stringify(value));
+           } catch (error) {
+               console.error('Error al guardar en localStorage:', error);
+           }
+       }</script>
+</body>
+</html>
+
